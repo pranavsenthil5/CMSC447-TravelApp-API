@@ -29,8 +29,8 @@ class Account(db.Model, UserMixin):
 class Post(db.Model):
     post_id = db.Column(db.Integer, primary_key=True)
     fk_user_id = db.Column(db.Integer, db.ForeignKey('account.user_id'), nullable=False)
-    post_title = db.Column(db.String(20), nullable=False)
-    post_content = db.Column(db.String(256), nullable=False)
+    post_title = db.Column(db.Text, nullable=False)
+    post_content = db.Column(db.Text, nullable=False)
     location = db.Column(db.String(40), nullable=False)
     images = db.Column(db.ARRAY(db.Text), nullable=False)
     post_date = db.Column(db.Date, nullable=False)
@@ -48,7 +48,7 @@ class Comment(db.Model):
     comment_id = db.Column(db.Integer, primary_key=True)
     fk_user_id = db.Column(db.Integer, db.ForeignKey('account.user_id'), nullable=False)
     fk_post_id = db.Column(db.Integer, db.ForeignKey('post.post_id'), nullable=False)
-    comment_content = db.Column(db.String(100), nullable=False)
+    comment_content = db.Column(db.Text, nullable=False)
 
 class DestinationFolder(db.Model):
     folder_id = db.Column(db.Integer, primary_key=True)

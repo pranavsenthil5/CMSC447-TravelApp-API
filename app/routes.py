@@ -110,6 +110,7 @@ def create_post(user_id):
     
     return jsonify(data)
 
+
 @app.route('/api/post/all', methods=['GET'])
 def get_all_posts():
     
@@ -147,6 +148,7 @@ def get_all_posts():
     return jsonify(posts)
     return jsonify({"message": "All posts fetched!"})
 
+
 @app.route('/api/post/all/<int:user_id>', methods=['GET'])
 def get_all_posts_by_user(user_id):
      
@@ -179,27 +181,30 @@ def get_all_posts_by_user(user_id):
         
     return jsonify(posts)
 
-@app.route('/api/post/all/<int:collection_id>', methods=['GET'])
+# Not Done
+@app.route('/api/post/from_collection/<int:collection_id>', methods=['GET'])
 def get_all_posts_in_collection(collection_id):
     # collections is also called DestinationFolder
+    saved_destinations = SavedDestination.query.filter_by(fk_folder_id=collection_id).all()
 
-    # get all posts
-    filttered_posts = Post.query.filter_by(fk_folder_id=collection_id).all()
-
-    # create a list of posts
+    # Create a list of posts
     posts = []
 
-    for post in filttered_posts:
-        posts.append({"title": post.post_title,
-                      "author": post.fk_user_id,
-                      "date": post.post_date,
-                      "location": post.location,
-                      "tags": post.tags,
-                      "image_uids": post.images,
-                      "description": post.post_content
-                      })
-        
+    # Iterate through saved_destinations and fetch the associated posts
+    for saved_destination in saved_destinations:
+        post = saved_destination.post
+        posts.append({
+            "title": post.post_title,
+            "author": post.fk_user_id,
+            "date": post.post_date,
+            "location": post.location,
+            "tags": post.tags,
+            "image_uids": post.images,
+            "description": post.post_content
+        })
+
     return jsonify(posts)
+
 
 @app.route('/api/post/<int:post_id>', methods=['GET'])
 def get_post(post_id):
@@ -219,6 +224,7 @@ def get_post(post_id):
 
     return jsonify(post)
 
+
 @app.route('/api/post/update/<int:post_id>', methods=['PUT'])
 def update_post(post_id):
     data = request.get_json()
@@ -235,13 +241,14 @@ def update_post(post_id):
 
     return jsonify({"message": "Post updated!"})
 
+
 @app.route('/api/post/add_to_collection/<int:post_id>/<int:collection_id>', methods=['POST'])
 def add_post_to_collection(post_id, collection_id):
         
     
     # add entry to the SavedDestination table
     saved_destination = SavedDestination( fk_post_id = post_id,
-                                             fk_list_id = collection_id)
+                                             fk_folder_id = collection_id)
     
     db.session.add(saved_destination)
     db.session.commit()
@@ -252,14 +259,17 @@ def add_post_to_collection(post_id, collection_id):
 def remove_post_from_collection(post_id, collection_id):
         
     # get the entry from the SavedDestination table
-    saved_destination = SavedDestination.query.filter_by(fk_post_id=post_id, fk_list_id=collection_id).first()
+    saved_destination = SavedDestination.query.filter_by(fk_post_id=post_id, fk_folder_id=collection_id).first()
 
     db.session.delete(saved_destination)
     db.session.commit()
 
     return jsonify({"message": "Post removed from collection!"})
 
+
 # Comment Routes
+
+
 @app.route('/api/comment/create/<int:post_id>', methods=['POST'])
 def create_comment(post_id):
     data = request.get_json()
@@ -277,6 +287,7 @@ def create_comment(post_id):
 
     return jsonify({"message": "Comment created!"})
 
+
 @app.route('/api/comment/all/<int:post_id>', methods=['GET'])
 def get_all_comments(post_id):
 
@@ -292,6 +303,7 @@ def get_all_comments(post_id):
     return jsonify(comments)
 
 
+
 @app.route('/api/comment/<int:comment_id>', methods=['GET'])
 def get_comment(comment_id):
     
@@ -302,6 +314,7 @@ def get_comment(comment_id):
             }
 
     return jsonify(comment)
+
 
 @app.route('/api/comment/update/<int:comment_id>', methods=['PUT'])
 def update_comment(comment_id):
@@ -327,6 +340,8 @@ def delete_comment(comment_id):
     return jsonify({"message": "Comment deleted!"})
 
 # Collection Routes
+
+
 @app.route('/api/collection/create/<int:user_id>', methods=['POST'])
 def create_collection(user_id):
     data = request.get_json()
@@ -355,6 +370,7 @@ def get_all_collections(user_id):
         
     return jsonify(folders)
 
+
 @app.route('/api/collection/<int:collection_id>', methods=['GET'])
 def get_collection(collection_id):
     
@@ -380,6 +396,7 @@ def update_collection(collection_id):
 
     return jsonify({"message": "Collection updated!"})
 
+
 @app.route('/api/collection/delete/<int:collection_id>', methods=['DELETE'])
 def delete_collection(collection_id):
     
@@ -389,7 +406,6 @@ def delete_collection(collection_id):
     db.session.commit()
 
     return jsonify({"message": "Collection deleted!"})
-
 
 # Task Routes
 @app.route('/api/task/create', methods=['POST'])
@@ -484,7 +500,6 @@ def mark_task_as_undone(task_id):
     db.session.commit()
 
     return jsonify({"message": "Task marked as undone!"})
-
 
 # test route
 @app.route('/api/test', methods=['GET'])
