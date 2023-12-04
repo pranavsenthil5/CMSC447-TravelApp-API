@@ -2,8 +2,12 @@ from flask import Flask
 from flask_sqlalchemy import SQLAlchemy
 from flask_bcrypt import Bcrypt
 from flask_login import LoginManager
+from flask_cors import CORS
+
 
 app = Flask(__name__)
+CORS(app)
+
 app.config['SECRET_KEY'] = 'jWrnbAs07TZg'
 # Connect to the database
 app.config['SQLALCHEMY_DATABASE_URI'] = 'postgresql://pranavsenthil5:jWrnbAs07TZg@ep-purple-hat-64093369.us-east-2.aws.neon.tech/TravelApp?sslmode=require'

@@ -63,6 +63,15 @@ def delete_account(user_id):
 
     return jsonify({"message": "Account deleted!"})
 
+@app.route('/api/account/check/<string:email>', methods=['GET'])
+def check_account(email):
+    acc = Account.query.filter_by(email=email).first()
+
+    if acc:
+        return jsonify({"message": "Account exists!"})
+    else:
+        return jsonify({"message": "Account does not exist!"})
+    
 # Post Routes
 @app.route('/api/post/create/<int:user_id>', methods=['POST'])
 def create_post(user_id):
@@ -92,6 +101,7 @@ def create_post(user_id):
     
     print(data)
 
+    print("Description: ", data['description'])
     # create a post object
     
     post = Post( fk_user_id = data['author'],
@@ -135,16 +145,19 @@ def get_all_posts():
     "description": "This is my first post!", 
     }"""
 
+    # date format: 2021-04-01 and Time zone: EST
     for post in filttered_posts:
+        formatted_date = post.post_date.strftime("%Y-%m-%d")
+
         posts.append({"title": post.post_title,
                       "author": post.fk_user_id,
-                      "date": post.post_date,
+                      "date": formatted_date,
                       "location": post.location,
                       "tags": post.tags,
                       "image_uids": post.images,
                       "description": post.post_content
                       })
-        
+    print(posts)
     return jsonify(posts)
     return jsonify({"message": "All posts fetched!"})
 
@@ -240,6 +253,29 @@ def update_post(post_id):
     db.session.commit()
 
     return jsonify({"message": "Post updated!"})
+
+
+@app.route('/api/post/delete/<int:post_id>', methods=['DELETE'])
+def delete_post(post_id):
+        
+        # delete all comments associated with the post
+        comments = Comment.query.filter_by(fk_post_id=post_id).all()
+        for comment in comments:
+            db.session.delete(comment)
+            db.session.commit()
+        
+        # delete all saved destinations associated with the post
+        saved_destinations = SavedDestination.query.filter_by(fk_post_id=post_id).all()
+        for saved_destination in saved_destinations:
+            db.session.delete(saved_destination)
+            db.session.commit()
+
+        post = Post.query.filter_by(post_id=post_id).first()
+    
+        db.session.delete(post)
+        db.session.commit()
+    
+        return jsonify({"message": "Post deleted!"})
 
 
 @app.route('/api/post/add_to_collection/<int:post_id>/<int:collection_id>', methods=['POST'])
@@ -365,7 +401,8 @@ def get_all_collections(user_id):
 
     for folder in filtered_folders:
         folders.append({"name": folder.folder_name,
-                        "location": folder.location
+                        "location": folder.location,
+                        "id": folder.folder_id,
                         })
         
     return jsonify(folders)
@@ -441,6 +478,24 @@ def get_all_tasks(user_id):
         
     return jsonify(tasks)
 
+@app.route('/api/task/all_from_collection/<int:collection_id>', methods=['GET'])
+def get_all_tasks_from_collection(collection_id):
+        
+        filtered_tasks = ToDoList.query.filter_by(fk_folder_id=collection_id).all()
+    
+        tasks = []
+    
+        for task in filtered_tasks:
+            tasks.append({"name": task.to_do_name,
+                        "description": task.description,
+                        "date": task.due_date,
+                        "collection_id": task.fk_folder_id,
+                            "status": task.status
+                            })
+            
+        return jsonify(tasks)
+
+
 @app.route('/api/task/update/<int:task_id>', methods=['PUT'])
 def update_task(task_id):
     data = request.get_json()
@@ -504,4 +559,5 @@ def mark_task_as_undone(task_id):
 # test route
 @app.route('/api/test', methods=['GET'])
 def test():
+    print("Test successful!")
     return jsonify({"message": "Test successful!"})
