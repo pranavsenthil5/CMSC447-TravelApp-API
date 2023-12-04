@@ -242,6 +242,7 @@ def get_post(post_id):
 def update_post(post_id):
     data = request.get_json()
 
+    
     post = Post.query.filter_by(post_id=post_id).first()
     post.post_title = data['title']
     post.post_content = data['description']
@@ -447,8 +448,11 @@ def delete_collection(collection_id):
 # Task Routes
 @app.route('/api/task/create', methods=['POST'])
 def create_task():
+
+    print("Creating a task")
     data = request.get_json()
     
+    print(data)
     task = ToDoList( fk_user_id = data['author'],
                      to_do_name = data['name'],
                      description = data['description'],
@@ -489,7 +493,7 @@ def get_all_tasks_from_collection(collection_id):
             tasks.append({"name": task.to_do_name,
                         "description": task.description,
                         "date": task.due_date,
-                        "collection_id": task.fk_folder_id,
+                        "id": task.list_id,
                             "status": task.status
                             })
             
@@ -499,7 +503,8 @@ def get_all_tasks_from_collection(collection_id):
 @app.route('/api/task/update/<int:task_id>', methods=['PUT'])
 def update_task(task_id):
     data = request.get_json()
-    
+    print("Updating a task")
+    print(data)
     task = ToDoList.query.filter_by(list_id=task_id).first()
 
     task.to_do_name = data['name']
