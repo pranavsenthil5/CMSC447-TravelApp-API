@@ -155,7 +155,8 @@ def get_all_posts():
                       "location": post.location,
                       "tags": post.tags,
                       "image_uids": post.images,
-                      "description": post.post_content
+                      "description": post.post_content,
+                        "id": post.post_id
                       })
     print(posts)
     return jsonify(posts)
@@ -189,7 +190,8 @@ def get_all_posts_by_user(user_id):
                       "location": post.location,
                       "tags": post.tags,
                       "image_uids": post.images,
-                      "description": post.post_content
+                      "description": post.post_content,
+                      "id": post.post_id
                       })
         
     return jsonify(posts)
