@@ -145,6 +145,8 @@ def get_all_posts():
     "description": "This is my first post!", 
     }"""
 
+    return jsonify({})
+
     # date format: 2021-04-01 and Time zone: EST
     for post in filttered_posts:
         formatted_date = post.post_date.strftime("%Y-%m-%d")
